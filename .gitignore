@@ -29,4 +29,8 @@ proguard/
 .navigation/
 
 # Android Studio captures folder
+<<<<<<< .merge_file_a01916
 captures/
+=======
+captures/
+>>>>>>> .merge_file_a13924
