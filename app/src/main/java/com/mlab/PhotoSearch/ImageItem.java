@@ -3,15 +3,23 @@ package com.mlab.PhotoSearch;
 import android.widget.ImageView;
 
 public class ImageItem {
+    private String mediaID;
     private String thumbsID;
-    private String title;
     private String date;
 
-    public ImageItem(String thumbsID, String title, String date) {
+    public ImageItem(String mediaID, String thumbsID, String date) {
         super();
+        this.mediaID = mediaID;
         this.thumbsID = thumbsID;
-        this.title = title;
         this.date = date;
+    }
+
+    public String getMediaID() {
+        return mediaID;
+    }
+
+    public void setMediaID(String mediaID) {
+        this.mediaID = mediaID;
     }
 
     public String getThumbsID() {
@@ -20,14 +28,6 @@ public class ImageItem {
 
     public void setThumbsID(String thumbsID) {
         this.thumbsID = thumbsID;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDate() {
