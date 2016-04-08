@@ -55,12 +55,6 @@ public class MainActivity extends ActionBarActivity {
             imageItems.add(new ImageItem(thumbsIDs.get(i), "Image#" + i, ""));
         }
 
-
-//        TypedArray imgs = getResources().obtainTypedArray(R.array.image_ids);
-//        for (int i = 0; i < imgs.length(); i++) {
-//            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imgs.getResourceId(i, -1));
-//            imageItems.add(new ImageItem(bitmap, "Image#" + i));
-//        }
         return imageItems;
     }
 
@@ -68,20 +62,18 @@ public class MainActivity extends ActionBarActivity {
      * 앨범 사진들에 대한 썸네일 이미지 정보 수집
      */
     private void getThumbInfo(ArrayList<String> thumbsIDs) {
-//        final String[] columns = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
-//        final String orderBy = MediaStore.Images.Media._ID;
-//        final Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        final String[] columns = { MediaStore.Images.Thumbnails.DATA, MediaStore.Images.Thumbnails._ID };
-        final String orderBy = MediaStore.Images.Thumbnails._ID;
+        final String[] columns = { MediaStore.Images.Thumbnails._ID, MediaStore.Images.Thumbnails.IMAGE_ID };
+        final String orderBy = MediaStore.Images.Thumbnails.IMAGE_ID;
         final Uri uri = MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI;
         Cursor imagecursor = getContentResolver().query(uri, columns, null, null, orderBy);
 
         if(imagecursor != null && imagecursor.moveToFirst()) {
             String date;
             String thumbsID;
-            int imageColumIndex = imagecursor.getColumnIndexOrThrow(MediaStore.Images.Thumbnails._ID);
+            int imageColumIndex = imagecursor.getColumnIndexOrThrow(columns[0]);
             do {
                 thumbsID = imagecursor.getString(imageColumIndex);
+//                date = imagecursor.getString(imageColumIndexDate);
                 if(thumbsID.isEmpty() != true) {
                     thumbsIDs.add(thumbsID);
 //                    thumbsDates.add(date);
@@ -90,8 +82,30 @@ public class MainActivity extends ActionBarActivity {
         }
 
         imagecursor.close();
-
-        return;
     }
 
+    private String getMediaDateAdd(String imageID) {
+        final String[] columns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_ADDED };
+        final String orderBy = MediaStore.Images.Media._ID;
+        final Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        Cursor imagecursor = getContentResolver().query(uri, columns, null, null, orderBy);
+
+        String mediaDate = "";
+        if(imagecursor != null && imagecursor.moveToFirst()) {
+            String mediaID;
+            int imageColumIndexID = imagecursor.getColumnIndexOrThrow(columns[0]);
+            int imageColumIndexDate = imagecursor.getColumnIndexOrThrow(columns[1]);
+            do {
+                mediaID = imagecursor.getString(imageColumIndexID);
+                if(mediaID.isEmpty() != true && mediaID.compareTo(imageID) == 0) {
+                    mediaDate = imagecursor.getString(imageColumIndexDate);
+                    break;
+                }
+            } while (imagecursor.moveToNext());
+        }
+
+        imagecursor.close();
+
+        return mediaDate;
+    }
 }

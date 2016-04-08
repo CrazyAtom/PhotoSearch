@@ -44,7 +44,7 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
         holder.imageTitle.setText(item.getTitle());
         holder.image.setImageURI(Uri.withAppendedPath(
                 MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, item.getThumbsID()));
-        holder.image.setScaleType(ImageView.ScaleType.FIT_XY);
+        holder.image.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
         return convertView;
     }
