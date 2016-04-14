@@ -57,12 +57,14 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
     public void setData(ArrayList<ImageItem> data) {
         this.data.clear();
         this.data = data;
+        setNotifyOnChange(true);
+        notifyDataSetChanged();
 
-        ((MainActivity)context).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                notifyDataSetChanged();
-            }
-        });
+//        ((MainActivity)context).runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                notifyDataSetChanged();
+//            }
+//        });
     }
 }

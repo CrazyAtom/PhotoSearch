@@ -1,26 +1,23 @@
 package com.mlab.PhotoSearch;
 
-import java.util.ArrayList;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.SearchView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class MainActivity extends ActionBarActivity {
     private GridView gridView;
     private GridViewAdapter gridAdapter;
-    private SearchView searchview;
-    private String searchWord = "1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,25 +25,36 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         gridView = (GridView) findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
+        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(""));
         gridView.setAdapter(gridAdapter);
 
-        searchview = (SearchView) findViewById(R.id.searchView);
-        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        Button buttonSearch = (Button) findViewById(R.id.buttonSearch);
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchWord = query;
-                gridAdapter.setData(getData());
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                searchWord = newText;
-                gridAdapter.setData(getData());
-                return true;
+            public void onClick(View v) {
+                EditText editTextSearch = (EditText) findViewById(R.id.editTextSearch);
+                String searchWord = editTextSearch.getText().toString();
+                gridAdapter.setData(getData(searchWord));
             }
         });
+
+
+//        searchview = (SearchView) findViewById(R.id.searchView);
+//        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                searchWord = query;
+//                gridAdapter.setData(getData());
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                searchWord = newText;
+//                gridAdapter.setData(getData());
+//                return true;
+//            }
+//        });
 
         gridView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -66,12 +74,12 @@ public class MainActivity extends ActionBarActivity {
     /**
      * gridview에 담기 위한 데이터
      */
-    private ArrayList<ImageItem> getData() {
+    private ArrayList<ImageItem> getData(String searchWord) {
         final ArrayList<ImageItem> imageItems = new ArrayList<ImageItem>();
         getThumbInfo(imageItems);
 
         if(searchWord != "") {
-            ArrayList<ImageItem> findItems = new ArrayList<ImageItem>();
+            final ArrayList<ImageItem> findItems = new ArrayList<ImageItem>();
             for(int i = 0; i < imageItems.size(); ++i) {
                 ImageItem item = imageItems.get(i);
                 if(item.getDate().indexOf(searchWord) != -1) {
@@ -121,7 +129,7 @@ public class MainActivity extends ActionBarActivity {
 
         String mediaDate = "";
         if(imagecursor != null && imagecursor.moveToFirst()) {
-            String mediaID;
+            String mediaID = "";
             int imageColumIndexID = imagecursor.getColumnIndexOrThrow(columns[0]);
             int imageColumIndexDate = imagecursor.getColumnIndexOrThrow(columns[1]);
             do {
