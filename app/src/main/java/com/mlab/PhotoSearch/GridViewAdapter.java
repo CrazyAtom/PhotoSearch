@@ -53,4 +53,16 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
         public  TextView imageTitle;
         public  ImageView image;
     }
+
+    public void setData(ArrayList<ImageItem> data) {
+        this.data.clear();
+        this.data = data;
+
+        ((MainActivity)context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
+    }
 }

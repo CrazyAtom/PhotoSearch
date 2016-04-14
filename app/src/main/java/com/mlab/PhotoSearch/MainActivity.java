@@ -14,10 +14,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
+import android.widget.SearchView;
 
 public class MainActivity extends ActionBarActivity {
     private GridView gridView;
     private GridViewAdapter gridAdapter;
+    private SearchView searchview;
+    private String searchWord = "1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +30,23 @@ public class MainActivity extends ActionBarActivity {
         gridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData());
         gridView.setAdapter(gridAdapter);
+
+        searchview = (SearchView) findViewById(R.id.searchView);
+        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchWord = query;
+                gridAdapter.setData(getData());
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                searchWord = newText;
+                gridAdapter.setData(getData());
+                return true;
+            }
+        });
 
         gridView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -50,9 +70,17 @@ public class MainActivity extends ActionBarActivity {
         final ArrayList<ImageItem> imageItems = new ArrayList<ImageItem>();
         getThumbInfo(imageItems);
 
-//        for(int i = 0; i < imageItems.size(); i++) {
-//            imageItems.add(new ImageItem(thumbsIDs.get(i), "Image#" + i, ""));
-//        }
+        if(searchWord != "") {
+            ArrayList<ImageItem> findItems = new ArrayList<ImageItem>();
+            for(int i = 0; i < imageItems.size(); ++i) {
+                ImageItem item = imageItems.get(i);
+                if(item.getDate().indexOf(searchWord) != -1) {
+                    findItems.add(item);
+                }
+            }
+
+            return findItems;
+        }
 
         return imageItems;
     }
