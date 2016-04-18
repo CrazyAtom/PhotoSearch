@@ -1,6 +1,7 @@
 package com.mlab.PhotoSearch;
 
 import android.database.Cursor;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -12,7 +13,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.SearchView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends ActionBarActivity {
@@ -28,37 +31,29 @@ public class MainActivity extends ActionBarActivity {
         gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(""));
         gridView.setAdapter(gridAdapter);
 
-        Button buttonSearch = (Button) findViewById(R.id.buttonSearch);
-        buttonSearch.setOnClickListener(new View.OnClickListener() {
+        SearchView searchView = (SearchView) findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public void onClick(View v) {
-                EditText editTextSearch = (EditText) findViewById(R.id.editTextSearch);
-                String searchWord = editTextSearch.getText().toString();
-                gridAdapter.setData(getData(searchWord));
+            public boolean onQueryTextSubmit(String query) {
+                gridAdapter = new GridViewAdapter(MainActivity.this, R.layout.grid_item_layout, getData(query));
+                gridAdapter.setSearchWord(query);
+                gridView.setAdapter(gridAdapter);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                gridAdapter = new GridViewAdapter(MainActivity.this, R.layout.grid_item_layout, getData(newText));
+                gridAdapter.setSearchWord(newText);
+                gridView.setAdapter(gridAdapter);
+                return true;
             }
         });
-
-
-//        searchview = (SearchView) findViewById(R.id.searchView);
-//        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                searchWord = query;
-//                gridAdapter.setData(getData());
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                searchWord = newText;
-//                gridAdapter.setData(getData());
-//                return true;
-//            }
-//        });
 
         gridView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
+                
 
                 //Create intent
 //                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
@@ -78,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
         final ArrayList<ImageItem> imageItems = new ArrayList<ImageItem>();
         getThumbInfo(imageItems);
 
-        if(searchWord != "") {
+        if ("".equals(searchWord) == false) {
             final ArrayList<ImageItem> findItems = new ArrayList<ImageItem>();
             for(int i = 0; i < imageItems.size(); ++i) {
                 ImageItem item = imageItems.get(i);
@@ -111,7 +106,7 @@ public class MainActivity extends ActionBarActivity {
             do {
                 thumbsID = imagecursor.getString(imageColumIdxThumbsID);
                 mediaID = imagecursor.getString(imageColimIdxMediaID);
-                date = getMediaDateAdd(mediaID);
+                date = getMediaDate(mediaID);
                 if(thumbsID.isEmpty() != true) {
                     imageItems.add(new ImageItem(mediaID, thumbsID, date));
                 }
@@ -121,20 +116,26 @@ public class MainActivity extends ActionBarActivity {
         imagecursor.close();
     }
 
-    private String getMediaDateAdd(String imageID) {
-        final String[] columns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_TAKEN };
+    /**
+     * Media 날짜 정보 얻기
+     * Exif 를 이용한 날짜 정보 획득에 실패시 데이터 생성 날짜로 하자
+     */
+    private String getMediaDate(String imageID) {
+        final String[] columns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED};
         final String orderBy = MediaStore.Images.Media._ID;
         final Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         Cursor imagecursor = getContentResolver().query(uri, columns, null, null, orderBy);
 
+        String mediaData = "";
         String mediaDate = "";
         if(imagecursor != null && imagecursor.moveToFirst()) {
-            String mediaID = "";
             int imageColumIndexID = imagecursor.getColumnIndexOrThrow(columns[0]);
-            int imageColumIndexDate = imagecursor.getColumnIndexOrThrow(columns[1]);
+            int imageColumIndexData = imagecursor.getColumnIndexOrThrow(columns[1]);
+            int imageColumIndexDate = imagecursor.getColumnIndexOrThrow(columns[2]);
             do {
-                mediaID = imagecursor.getString(imageColumIndexID);
-                if(mediaID.isEmpty() != true && mediaID.compareTo(imageID) == 0) {
+                String mediaID = imagecursor.getString(imageColumIndexID);
+                if(mediaID.equals(imageID) == true) {
+                    mediaData = imagecursor.getString(imageColumIndexData);
                     mediaDate = imagecursor.getString(imageColumIndexDate);
                     break;
                 }
@@ -143,6 +144,25 @@ public class MainActivity extends ActionBarActivity {
 
         imagecursor.close();
 
-        return mediaDate;
+        String exifDate = getExifDate(mediaData);
+        if("null".equals(exifDate) == true)
+            return mediaDate;
+
+        return exifDate;
+    }
+
+    /**
+     * Exif를 이용한 날짜 정보 얻기
+     */
+    private String getExifDate(String filename) {
+        String attribute = "";
+        try {
+            ExifInterface exif = new ExifInterface(filename);
+            attribute += exif.getAttribute(ExifInterface.TAG_DATETIME);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return attribute;
     }
 }
