@@ -5,14 +5,6 @@
     android:orientation="vertical"
     android:baselineAligned="false">
 
-    <SearchView
-        android:layout_width="fill_parent"
-        android:layout_height="35dp"
-        android:id="@+id/searchView"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
-
     <GridView
         android:id="@+id/gridView"
         android:layout_width="fill_parent"

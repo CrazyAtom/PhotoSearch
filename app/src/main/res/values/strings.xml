@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">PhotoSearch</string>
     <string name="search">Search</string>
-    <string name="action_search">Search</string>
+    <string name="action_search">Search Photo</string>
 </resources>

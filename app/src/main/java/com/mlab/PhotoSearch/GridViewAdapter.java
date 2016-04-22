@@ -2,6 +2,8 @@ package com.mlab.PhotoSearch;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -45,27 +47,12 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
         }
 
         ImageItem item = data.get(position);
-//        holder.imageTitle.setText(item.getDate());
         setTextViewColorPartial(holder.imageTitle, item.getDate(), searchWord, 0xffff7011);
         holder.image.setImageURI(Uri.withAppendedPath(
                 MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, item.getThumbsID()));
         holder.image.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
         return convertView;
-    }
-
-    public void setData(ArrayList<ImageItem> data) {
-        this.data.clear();
-        this.data = data;
- //       setNotifyOnChange(true);
-        // notifyDataSetChanged();
-
-//        ((MainActivity)context).runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                notifyDataSetChanged();
-//            }
-//        });
     }
 
     public void setSearchWord(String searchWord) {

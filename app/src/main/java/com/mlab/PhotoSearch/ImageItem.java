@@ -1,7 +1,5 @@
 package com.mlab.PhotoSearch;
 
-import android.widget.ImageView;
-
 public class ImageItem {
     private String mediaID;
     private String thumbsID;

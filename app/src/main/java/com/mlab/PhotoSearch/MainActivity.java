@@ -1,11 +1,19 @@
 package com.mlab.PhotoSearch;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.media.ExifInterface;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -23,15 +31,12 @@ public class MainActivity extends ActionBarActivity {
     private GridViewAdapter gridAdapter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.action_search, menu);
 
-        gridView = (GridView) findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(""));
-        gridView.setAdapter(gridAdapter);
+        MenuItem searchItem = menu.findItem(R.id.searchView);
+        SearchView searchView = (SearchView) searchItem.getActionView();
 
-        SearchView searchView = (SearchView) findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -50,18 +55,36 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        return true;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // actionbar 인스턴스
+        ActionBar ab = getSupportActionBar();
+
+        // actionbar 설정
+        ab.setDisplayHomeAsUpEnabled(false);
+        ab.setBackgroundDrawable(new ColorDrawable(0xFF339999));
+
+        gridView = (GridView) findViewById(R.id.gridView);
+        gridAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, getData(""));
+        gridView.setAdapter(gridAdapter);
+
         gridView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
-                
 
                 //Create intent
-//                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-//                intent.putExtra("title", item.getTitle());
-//                intent.putExtra("image", item.getImage());
-//
-//                //Start details activity
-//                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra("title", item.getDate());
+                intent.putExtra("image", item.getMediaID());
+
+                //Start details activity
+                startActivity(intent);
             }
         });
     }
@@ -71,7 +94,7 @@ public class MainActivity extends ActionBarActivity {
      */
     private ArrayList<ImageItem> getData(String searchWord) {
         final ArrayList<ImageItem> imageItems = new ArrayList<ImageItem>();
-        getThumbInfo(imageItems);
+        getMediaItems(imageItems);
 
         if ("".equals(searchWord) == false) {
             final ArrayList<ImageItem> findItems = new ArrayList<ImageItem>();
@@ -89,20 +112,20 @@ public class MainActivity extends ActionBarActivity {
     }
 
     /**
-     * MediaStore 정보 얻기
+     * Media 정보 얻기
      */
-    private void getThumbInfo(ArrayList<ImageItem> imageItems) {
-        final String[] columns = { MediaStore.Images.Thumbnails._ID, MediaStore.Images.Thumbnails.IMAGE_ID };
+    private void getMediaItems(ArrayList<ImageItem> imageItems) {
+        final String[] proj = { MediaStore.Images.Thumbnails._ID, MediaStore.Images.Thumbnails.IMAGE_ID };
         final String orderBy = MediaStore.Images.Thumbnails._ID;
         final Uri uri = MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI;
-        Cursor imagecursor = getContentResolver().query(uri, columns, null, null, orderBy);
+        Cursor imagecursor = getContentResolver().query(uri, proj, null, null, orderBy);
 
         if(imagecursor != null && imagecursor.moveToFirst()) {
             String thumbsID;
             String mediaID;
             String date;
-            int imageColumIdxThumbsID = imagecursor.getColumnIndexOrThrow(columns[0]);
-            int imageColimIdxMediaID = imagecursor.getColumnIndexOrThrow(columns[1]);
+            int imageColumIdxThumbsID = imagecursor.getColumnIndexOrThrow(proj[0]);
+            int imageColimIdxMediaID = imagecursor.getColumnIndexOrThrow(proj[1]);
             do {
                 thumbsID = imagecursor.getString(imageColumIdxThumbsID);
                 mediaID = imagecursor.getString(imageColimIdxMediaID);
@@ -121,17 +144,17 @@ public class MainActivity extends ActionBarActivity {
      * Exif 를 이용한 날짜 정보 획득에 실패시 데이터 생성 날짜로 하자
      */
     private String getMediaDate(String imageID) {
-        final String[] columns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED};
+        final String[] proj = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED};
         final String orderBy = MediaStore.Images.Media._ID;
         final Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        Cursor imagecursor = getContentResolver().query(uri, columns, null, null, orderBy);
+        Cursor imagecursor = getContentResolver().query(uri, proj, null, null, orderBy);
 
         String mediaData = "";
         String mediaDate = "";
         if(imagecursor != null && imagecursor.moveToFirst()) {
-            int imageColumIndexID = imagecursor.getColumnIndexOrThrow(columns[0]);
-            int imageColumIndexData = imagecursor.getColumnIndexOrThrow(columns[1]);
-            int imageColumIndexDate = imagecursor.getColumnIndexOrThrow(columns[2]);
+            int imageColumIndexID = imagecursor.getColumnIndexOrThrow(proj[0]);
+            int imageColumIndexData = imagecursor.getColumnIndexOrThrow(proj[1]);
+            int imageColumIndexDate = imagecursor.getColumnIndexOrThrow(proj[2]);
             do {
                 String mediaID = imagecursor.getString(imageColumIndexID);
                 if(mediaID.equals(imageID) == true) {
