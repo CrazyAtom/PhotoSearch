@@ -26,6 +26,5 @@ public class DetailsActivity extends ActionBarActivity {
 
         ImageView imageView = (ImageView) findViewById(R.id.image);
         imageView.setImageURI(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, image));
-//        imageView.setImageBitmap(bitmap);
     }
 }
